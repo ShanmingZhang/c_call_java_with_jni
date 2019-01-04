@@ -1,0 +1,62 @@
+//============================================================================
+// Name        : calljavawithjni.cpp
+// Author      : 
+// Version     :
+// Copyright   : Your copyright notice
+// Description : Hello World in C++, Ansi-style
+//============================================================================
+
+/* Remember to include this */
+#include <jni.h>
+#include <cstring>
+#include <iostream>
+using namespace std;
+
+int main() {
+
+	JavaVMOption options[1]; // A list of options to build a JVM from C++
+	JNIEnv *env;
+	JavaVM *jvm;
+	JavaVMInitArgs vm_args; // Arguments for the JVM (see below)
+
+	jclass cls;
+
+	options[0].optionString =
+			"-Djava.class.path=/Users/zhangshanming/eclipse/java-neon/workspace/graphhelperwithjgrapht/bin/:/Users/zhangshanming/eclipse/java-neon/workspace/graphhelperwithjgrapht/lib/jgrapht-core-1.0.0.jar";
+
+	// Setting the arguments to create a JVM...
+	memset(&vm_args, 0, sizeof(vm_args));
+	vm_args.version = JNI_VERSION_1_6;
+	vm_args.nOptions = 1;
+	vm_args.options = options;
+
+	long status = JNI_CreateJavaVM(&jvm, (void**) &env, &vm_args);
+
+	if (status != JNI_ERR) {
+
+		cls = env->FindClass(
+				"jp/ac/keio/ics/yamanaka/graph/kshortestpath/KShortestPath");
+		cout << cls << endl;
+		if (cls != 0) {
+			printf("Class found \n");
+
+			jmethodID mid3 = env->GetStaticMethodID(cls, "main",
+					"([Ljava/lang/String;)V");
+			if (mid3 == nullptr) {
+				cerr << "ERROR: method not found !" << endl;
+			} else {
+				jobjectArray arr = env->NewObjectArray(1, // constructs java array of 5
+						env->FindClass("java/lang/String"),    // Strings
+						env->NewStringUTF("str")); // each initialized with value "str"
+				env->SetObjectArrayElement(arr, 0,
+						env->NewStringUTF("/Users/zhangshanming/eclipse/java-neon/workspace/graphhelperwithjgrapht/SubNW_20Nodes_3links.brite"));  // change an element
+				env->CallStaticVoidMethod(cls, mid3, arr); // call the method with the arr as argument.
+				env->DeleteLocalRef(arr);     // release the object
+			}
+		}
+		jvm->DestroyJavaVM();
+		printf("All done, bye bye!\n");
+		return 0;
+	} else
+		return -1;
+}
